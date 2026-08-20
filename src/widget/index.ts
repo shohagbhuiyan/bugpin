@@ -146,6 +146,20 @@ function createWidget(config: WidgetConfig, languageInputs: InitLanguageInputs =
   // Attach Shadow DOM
   const shadow = container.attachShadow({ mode: 'open' });
 
+  // Prevent editable controls inside the Shadow DOM from bubbling keystrokes
+  // to global window shortcuts (for example Space-to-pan in annotation mode).
+  shadow.addEventListener('keydown', (event) => {
+    const originalTarget = event.composedPath()[0];
+    const isEditableTarget =
+      originalTarget instanceof HTMLInputElement ||
+      originalTarget instanceof HTMLTextAreaElement ||
+      (originalTarget instanceof HTMLElement && originalTarget.isContentEditable);
+
+    if (isEditableTarget) {
+      event.stopPropagation();
+    }
+  });
+
   // Inject styles
   const styleElement = document.createElement('style');
   styleElement.textContent = styles;
